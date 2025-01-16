@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: akuko-akowe-api
+    name: chronicle-api
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: python manage.py migrate && python manage.py collectstatic --noinput && gunicorn blog_api.wsgi:application
@@ -10,6 +10,6 @@ services:
       - key: DEBUG
         value: False
       - key: DJANGO_ALLOWED_HOSTS
-        value: "akuko-akowe-api.onrender.com,1dfe-102-88-53-239.ngrok-free.app,localhost"
+        value: "chronicle-api.onrender.com,1dfe-102-88-53-239.ngrok-free.app,localhost"
       - key: DJANGO_SECRET_KEY
         generateValue: true

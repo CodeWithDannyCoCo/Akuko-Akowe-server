@@ -46,10 +46,10 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 # Convert comma-separated string to list
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 CSRF_TRUSTED_ORIGINS = [
-    'https://1dfe-102-88-53-239.ngrok-free.app',
-    'https://akuko-akowe.vercel.app',
-    'https://akuko-akowe-api.onrender.com',
-    'https://akuko-akowe-server.onrender.com'
+    'https://chronicle-blog.vercel.app',
+    'http://127.0.0.1:3000',
+    'http://localhost:3000',
+    
 ]
 
 
@@ -176,11 +176,8 @@ AUTH_USER_MODEL = 'api.User'
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://1dfe-102-88-53-239.ngrok-free.app",
-    "http://1dfe-102-88-53-239.ngrok-free.app",
-    "https://akuko-akowe.vercel.app",
-    "https://akuko-akowe-api.onrender.com",
-    "https://akuko-akowe-server.onrender.com"
+    "http://127.0.0.1:3000",
+    "https://chronicle-blog.vercel.app/"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
