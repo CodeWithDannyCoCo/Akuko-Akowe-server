@@ -41,19 +41,15 @@ if not SECRET_KEY:
         raise ValueError("SECRET_KEY environment variable is not set!")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '1dfe-102-88-53-239.ngrok-free.app',
-    'akuko-akowe.vercel.app',
-    'akuko-akowe-api.onrender.com',
-]
+# Convert comma-separated string to list
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 CSRF_TRUSTED_ORIGINS = [
     'https://1dfe-102-88-53-239.ngrok-free.app',
     'https://akuko-akowe.vercel.app',
     'https://akuko-akowe-api.onrender.com',
+    'https://akuko-akowe-server.onrender.com'
 ]
 
 
@@ -258,3 +254,6 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Whitenoise settings
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
