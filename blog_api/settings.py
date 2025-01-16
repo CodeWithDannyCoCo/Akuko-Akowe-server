@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from datetime import timedelta
 import os
@@ -35,11 +34,10 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 # Convert comma-separated string to list
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 CSRF_TRUSTED_ORIGINS = [
-    'https://chronicle-server-f2n9.onrender.com'
+    'https://chronicle-server-f2n9.onrender.com',
     'https://chronicle-blog.vercel.app',
     'http://127.0.0.1:3000',
     'http://localhost:3000',
-    
 ]
 
 
