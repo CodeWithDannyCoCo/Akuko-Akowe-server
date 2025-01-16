@@ -11,3 +11,5 @@ services:
         value: False
       - key: DJANGO_ALLOWED_HOSTS
         value: "akuko-akowe-api.onrender.com,1dfe-102-88-53-239.ngrok-free.app,localhost"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
