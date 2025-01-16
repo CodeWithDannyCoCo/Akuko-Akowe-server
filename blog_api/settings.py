@@ -180,6 +180,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://1dfe-102-88-53-239.ngrok-free.app",
     "https://akuko-akowe.vercel.app",
     "https://akuko-akowe-api.onrender.com",
+    "https://akuko-akowe-server.onrender.com"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
