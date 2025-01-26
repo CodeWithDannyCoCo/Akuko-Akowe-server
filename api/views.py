@@ -9,6 +9,7 @@ from .serializers import PostSerializer, UserSerializer, UserProfileSerializer, 
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -290,3 +291,30 @@ def get_current_user(request):
     """Get the current authenticated user's profile"""
     serializer = UserSerializer(request.user)
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([])  # No authentication required
+def health_check(request):
+    """
+    Health check endpoint to verify API availability
+    """
+    try:
+        # Check database connection
+        from django.db import connection
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+
+        return Response({
+            "status": "healthy",
+            "message": "API is running",
+            "database": "connected",
+            "timestamp": timezone.now().isoformat()
+        }, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({
+            "status": "unhealthy",
+            "message": str(e),
+            "timestamp": timezone.now().isoformat()
+        }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
