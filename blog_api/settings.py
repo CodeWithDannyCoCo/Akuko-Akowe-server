@@ -31,8 +31,21 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# Convert comma-separated string to list
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+# Convert comma-separated string to list and ensure no empty strings
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', '').split(',') if host.strip()]
+
+# Always include the render domain and localhost
+if not ALLOWED_HOSTS or DEBUG:
+    ALLOWED_HOSTS.extend([
+        'chronicle-server-f2n9.onrender.com',
+        'localhost',
+        '127.0.0.1',
+        '.onrender.com',  # Allow all subdomains on render.com
+    ])
+
+# Ensure no duplicates
+ALLOWED_HOSTS = list(set(ALLOWED_HOSTS))
+
 CSRF_TRUSTED_ORIGINS = [
     'https://chronicle-server-f2n9.onrender.com',
     'https://chronicle-blog.vercel.app',
