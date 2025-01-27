@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'api',
+    'communications',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
 ]
@@ -243,6 +244,18 @@ SIMPLE_JWT = {
     'JTI_CLAIM': 'jti',
 }
 
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
+
+# Frontend URL for password reset
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:3000')
+
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
@@ -257,3 +270,47 @@ if not DEBUG:
 
 # Whitenoise settings
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Socket.io Configuration
+SOCKETIO = {
+    'CORS_ALLOWED_ORIGINS': [
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://chronicle-blog.vercel.app',
+    ],
+    'ASYNC_MODE': 'aiohttp',
+    'PING_TIMEOUT': 60,
+    'PING_INTERVAL': 25,
+}
+
+# WebRTC Configuration
+WEBRTC_CONFIG = {
+    'iceServers': [
+        {
+            'urls': [
+                'stun:stun.l.google.com:19302',
+                'stun:stun1.l.google.com:19302'
+            ]
+        },
+        {
+            'urls': [
+                'turn:chronicle.metered.live:80',
+                'turn:chronicle.metered.live:443',
+                'turn:chronicle.metered.live:443?transport=tcp'
+            ],
+            # Credentials will be fetched dynamically via API
+            'username': 'METERED_USERNAME',  # Will be replaced dynamically
+            'credential': 'METERED_CREDENTIAL',  # Will be replaced dynamically
+            'credentialType': 'password'
+        }
+    ],
+    'iceTransportPolicy': 'all',
+    'iceCandidatePoolSize': 10,
+    'bundlePolicy': 'max-bundle',
+    'rtcpMuxPolicy': 'require'
+}
+
+# TURN server configuration
+# For production (Metered.ca), set these environment variables:
+# METERED_API_KEY - your API key for authentication
+METERED_API_KEY = 'a7cb6520b3a299c0aba3a2067de3bd40561d'

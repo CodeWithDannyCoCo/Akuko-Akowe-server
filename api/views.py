@@ -10,6 +10,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
+import jwt
+from datetime import datetime, timedelta
 
 User = get_user_model()
 
@@ -280,8 +284,7 @@ def follow_user(request, username):
 @permission_classes([permissions.IsAuthenticated])
 def unfollow_user(request, username):
     user_to_follow = get_object_or_404(User, username=username)
-    Follow.objects.filter(follower=request.user,
-                          following=user_to_follow).delete()
+    Follow.objects.filter(follower=request.user,following=user_to_follow).delete()
     return Response({'status': 'unfollowed'})
 
 
@@ -318,3 +321,98 @@ def health_check(request):
             "message": str(e),
             "timestamp": timezone.now().isoformat()
         }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def request_password_reset(request):
+    """
+    Request a password reset by providing an email address
+    """
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(email=email)
+        # Generate reset token
+        token = jwt.encode({
+            'user_id': user.id,
+            'email': user.email,
+            'exp': datetime.utcnow() + timedelta(hours=24)
+        }, settings.SECRET_KEY, algorithm='HS256')
+
+        # Create reset URL
+        reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}&email={email}"
+
+        # Send email
+        send_mail(
+            'Password Reset Request',
+            f'Click the following link to reset your password: {reset_url}',
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+
+        return Response({
+            'message': 'Password reset email sent successfully',
+            'email': email
+        })
+    except User.DoesNotExist:
+        # For security, don't reveal if the email exists or not
+        return Response({
+            'message': 'If an account exists with this email, a password reset link will be sent.',
+        })
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def confirm_password_reset(request):
+    """
+    Confirm password reset by providing token, email, and new password
+    """
+    token = request.data.get('token')
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    if not all([token, email, password]):
+        return Response({
+            'error': 'Token, email, and password are required'
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        # Verify token
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        
+        # Check if token matches email
+        if payload['email'] != email:
+            return Response({
+                'error': 'Invalid token for this email'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get user and update password
+        user = User.objects.get(id=payload['user_id'])
+        user.set_password(password)
+        user.save()
+
+        return Response({
+            'message': 'Password reset successful'
+        })
+    except jwt.ExpiredSignatureError:
+        return Response({
+            'error': 'Reset token has expired'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except jwt.InvalidTokenError:
+        return Response({
+            'error': 'Invalid reset token'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except User.DoesNotExist:
+        return Response({
+            'error': 'User not found'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
